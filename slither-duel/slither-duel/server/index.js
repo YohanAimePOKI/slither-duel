@@ -199,7 +199,7 @@ setInterval(() => {
     ws.alive = false;
     ws.ping();
   });
-}, 30000);
+}, 25000);
 
 function randomColor() {
   const colors = ['#FF4757','#2ED573','#1E90FF','#FFA502','#FF6B81','#70A1FF','#ECCC68','#A29BFE','#00CEC9','#FD79A8'];

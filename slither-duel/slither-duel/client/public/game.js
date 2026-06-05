@@ -307,6 +307,17 @@ function handleMsg(msg) {
 }
 
 // ─── Room actions ─────────────────────────────────────────────────
+function wsReady(cb) {
+  if (ws && ws.readyState === 1) { cb(); return; }
+  // Re-connect and retry once open
+  connectWS();
+  const orig = ws.onopen;
+  ws.onopen = (e) => {
+    if (orig) orig.call(ws, e);
+    cb();
+  };
+}
+
 function createRoom() {
   document.getElementById('join-error').textContent = '';
   document.getElementById('room-created-info').style.display = 'block';
@@ -314,14 +325,14 @@ function createRoom() {
   document.getElementById('slot-p2').classList.remove('filled');
   document.getElementById('slot-p2').querySelector('.pname').textContent = 'Waiting...';
   document.getElementById('slot-p2').querySelector('.pname').style.color = 'var(--text2)';
-  wsSend({ type: 'create_room' });
+  wsReady(() => wsSend({ type: 'create_room' }));
 }
 
 function joinRoom() {
   const code = document.getElementById('join-code-input').value.trim().toUpperCase();
   document.getElementById('join-error').textContent = '';
   if (code.length !== 4) { document.getElementById('join-error').textContent = 'Enter a 4-char code'; return; }
-  wsSend({ type: 'join_room', code });
+  wsReady(() => wsSend({ type: 'join_room', code }));
 }
 
 function requestRematch() {
@@ -332,12 +343,18 @@ function requestRematch() {
 function backToLobby() {
   gameRunning = false;
   cancelAnimationFrame(animFrame); animFrame = null;
-  disconnectWS();
   snakes = {}; foodMap = {};
   roomCode = null; myId = null;
   hideOverlay('overlay-gameover');
   hideOverlay('overlay-countdown');
   hideOverlay('overlay-waiting');
+  // Don't disconnect; re-auth on existing connection or reconnect
+  if (!ws || ws.readyState > 1) {
+    connectWS();
+  } else if (ws.readyState === 1) {
+    // Re-send auth so server knows we're back in lobby
+    ws.send(JSON.stringify({ type: 'auth', token, color: myColor }));
+  }
   showLobby();
 }
 
