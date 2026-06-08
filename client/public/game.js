@@ -211,14 +211,7 @@ function handleMsg(msg) {
       break;
 
     case 'player_joined':
-      // Update lobby slot if visible
       if (msg.playerCount === 2) hideOverlay('overlay-waiting');
-      // Update created-room slots
-      if (document.getElementById('room-created-info').style.display !== 'none') {
-        document.getElementById('slot-p2').classList.add('filled');
-        document.getElementById('slot-p2').querySelector('.pname').textContent = msg.username;
-        document.getElementById('slot-p2').querySelector('.pname').style.color = '';
-      }
       break;
 
     case 'player_left':
@@ -309,11 +302,6 @@ function handleMsg(msg) {
 // ─── Room actions ─────────────────────────────────────────────────
 function createRoom() {
   document.getElementById('join-error').textContent = '';
-  document.getElementById('room-created-info').style.display = 'block';
-  document.getElementById('slot-p1-name').textContent = myUsername;
-  document.getElementById('slot-p2').classList.remove('filled');
-  document.getElementById('slot-p2').querySelector('.pname').textContent = 'Waiting...';
-  document.getElementById('slot-p2').querySelector('.pname').style.color = 'var(--text2)';
   wsSend({ type: 'create_room' });
 }
 
