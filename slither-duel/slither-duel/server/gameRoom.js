@@ -161,11 +161,15 @@ class GameRoom {
       username: ws.playerData.username
     }));
 
-    this.broadcast({
-      type: 'player_joined',
-      username: ws.playerData.username,
-      playerCount: this.players.size
-    });
+    for (const [id, other] of this.players) {
+      if (id !== ws.id && other.readyState === 1) {
+        other.send(JSON.stringify({
+          type: 'player_joined',
+          username: ws.playerData.username,
+          playerCount: this.players.size
+        }));
+      }
+    }
 
     if (this.players.size === 2 && this.state === 'waiting') {
       this._startCountdown();

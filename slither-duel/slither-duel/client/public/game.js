@@ -211,14 +211,7 @@ function handleMsg(msg) {
       break;
 
     case 'player_joined':
-      // Update lobby slot if visible
       if (msg.playerCount === 2) hideOverlay('overlay-waiting');
-      // Update created-room slots
-      if (document.getElementById('room-created-info').style.display !== 'none') {
-        document.getElementById('slot-p2').classList.add('filled');
-        document.getElementById('slot-p2').querySelector('.pname').textContent = msg.username;
-        document.getElementById('slot-p2').querySelector('.pname').style.color = '';
-      }
       break;
 
     case 'player_left':
