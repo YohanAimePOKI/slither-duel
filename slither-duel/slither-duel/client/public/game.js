@@ -140,6 +140,8 @@ function showLobby() {
   document.getElementById('lobby-username').textContent = myUsername + (isGuest ? ' (Guest)' : '');
   loadLeaderboard();
   document.getElementById('room-created-info').style.display = 'none';
+  hideOverlay('overlay-countdown');  // ← ajoute cette ligne
+  hideOverlay('overlay-gameover');   // ← et celle-ci
   connectWS();
 }
 
