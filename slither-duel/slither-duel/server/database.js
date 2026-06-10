@@ -1,28 +1,10 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
-
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../data/slither.db');
-const dataDir = path.dirname(DB_PATH);
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-
-const db = new Database(DB_PATH);
-
-db.exec(`CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  wins INTEGER DEFAULT 0,
-  losses INTEGER DEFAULT 0,
-  kills INTEGER DEFAULT 0,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)`);
+const users = new Map();
 
 module.exports = {
-  getUser:      (username) => Promise.resolve(db.prepare('SELECT * FROM users WHERE username = ?').get(username)),
-  createUser:   (username, hash) => Promise.resolve(db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hash)),
-  recordWin:    (username) => Promise.resolve(db.prepare('UPDATE users SET wins = wins + 1 WHERE username = ?').run(username)),
-  recordLoss:   (username) => Promise.resolve(db.prepare('UPDATE users SET losses = losses + 1 WHERE username = ?').run(username)),
-  recordKill:   (username) => Promise.resolve(db.prepare('UPDATE users SET kills = kills + 1 WHERE username = ?').run(username)),
-  getLeaderboard: () => Promise.resolve(db.prepare('SELECT username, wins, losses, kills FROM users ORDER BY wins DESC, kills DESC LIMIT 20').all()),
+  getUser: (username) => Promise.resolve(users.get(username.toLowerCase()) || null),
+  createUser: (username, hash) => { users.set(username.toLowerCase(), { username, password_hash: hash, wins: 0, losses: 0, kills: 0 }); return Promise.resolve(); },
+  recordWin: (username) => { const u = users.get(username.toLowerCase()); if (u) u.wins++; return Promise.resolve(); },
+  recordLoss: (username) => { const u = users.get(username.toLowerCase()); if (u) u.losses++; return Promise.resolve(); },
+  recordKill: (username) => { const u = users.get(username.toLowerCase()); if (u) u.kills++; return Promise.resolve(); },
+  getLeaderboard: () => Promise.resolve(Array.from(users.values()).sort((a,b) => b.wins - a.wins).slice(0,20))
 };
