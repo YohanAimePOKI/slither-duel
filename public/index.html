@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slither Duel</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+  <canvas id="game-canvas"></canvas>
+
+  <!-- ══ AUTH ══════════════════════════════════════ -->
+  <div id="s-auth" class="screen active">
+    <div class="card auth-card">
+      <div class="logo-wrap">
+        <span class="logo-icon">⟁</span>
+        <h1 class="logo-text">SLITHER<span class="logo-accent">DUEL</span></h1>
+      </div>
+      <p class="tagline">1 contre 1 · Qui survivra ?</p>
+
+      <div class="tab-bar">
+        <button class="tab active" data-tab="login">Connexion</button>
+        <button class="tab"        data-tab="signup">Inscription</button>
+        <button class="tab"        data-tab="guest">Invité</button>
+      </div>
+
+      <p id="auth-error" class="auth-error"></p>
+
+      <!-- Login -->
+      <div id="tp-login" class="tab-panel active">
+        <input id="l-user" type="text"     placeholder="Pseudo"          autocomplete="username" />
+        <input id="l-pass" type="password" placeholder="Mot de passe"    autocomplete="current-password" />
+        <button class="btn-primary" onclick="doLogin()">Se connecter</button>
+      </div>
+
+      <!-- Signup -->
+      <div id="tp-signup" class="tab-panel">
+        <input id="s-user" type="text"     placeholder="Pseudo (3-16 car.)" />
+        <input id="s-pass" type="password" placeholder="Mot de passe (4 min)" />
+        <button class="btn-primary" onclick="doSignup()">Créer un compte</button>
+      </div>
+
+      <!-- Guest -->
+      <div id="tp-guest" class="tab-panel">
+        <input id="g-name" type="text" placeholder="Pseudo (optionnel)" />
+        <button class="btn-primary" onclick="doGuest()">Jouer en invité</button>
+        <p class="hint">Les victoires ne sont pas sauvegardées en mode invité.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LOBBY ══════════════════════════════════════ -->
+  <div id="s-lobby" class="screen">
+    <div class="card lobby-card">
+      <div class="lobby-header">
+        <span class="logo-small">⟁ SLITHER<b>DUEL</b></span>
+        <div class="user-row">
+          <span id="lobby-user" class="username-badge"></span>
+          <span id="lobby-stats" class="stats-badge"></span>
+          <button class="btn-ghost-sm" onclick="logout()">Déconnexion</button>
+        </div>
+      </div>
+
+      <div class="lobby-actions">
+        <button class="btn-big" onclick="joinMatchmaking()">
+          <span class="btn-icon">⚔</span>
+          <span class="btn-label">Jouer en ligne</span>
+          <span class="btn-sub">Matchmaking 1v1</span>
+        </button>
+
+        <div class="row-btns">
+          <button class="btn-medium" onclick="createRoom()">
+            <span class="btn-icon">🏠</span>
+            <span>Créer une room</span>
+          </button>
+          <button class="btn-medium" onclick="showJoinPanel()">
+            <span class="btn-icon">🔑</span>
+            <span>Rejoindre</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="join-panel" class="join-panel" style="display:none;">
+        <input id="code-input" type="text" placeholder="Code (4 car.)" maxlength="4" oninput="this.value=this.value.toUpperCase()" />
+        <button class="btn-primary" onclick="joinRoom()">Rejoindre</button>
+        <button class="btn-ghost-sm" onclick="hideJoinPanel()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WAITING ROOM ════════════════════════════════ -->
+  <div id="s-waiting" class="screen">
+    <div class="card waiting-card">
+      <h2 id="w-title">En attente…</h2>
+      <div id="w-code" class="code-display"></div>
+
+      <div id="w-dots" class="dots">
+        <span></span><span></span><span></span>
+      </div>
+
+      <ul id="w-players" class="player-list"></ul>
+
+      <button id="w-start" class="btn-primary" onclick="startGame()" style="display:none;">
+        ▶ Lancer la partie
+      </button>
+
+      <button class="btn-ghost-sm mt" onclick="leaveRoom()">← Retour</button>
+    </div>
+  </div>
+
+  <!-- ══ GAME (canvas behind, no DOM content) ═══════ -->
+  <div id="s-game" class="screen game-screen"></div>
+
+  <!-- ══ GAME OVER ═══════════════════════════════════ -->
+  <div id="s-over" class="screen">
+    <div class="card over-card">
+      <h1 id="over-title"></h1>
+      <p  id="over-sub"></p>
+      <p  id="over-ready" class="ready-msg"></p>
+      <div class="over-actions">
+        <button class="btn-primary" onclick="playAgain()">🔄 Rejouer</button>
+        <button class="btn-ghost"   onclick="leaveRoom()">🏠 Lobby</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TOAST ══════════════════════════════════════= -->
+  <div id="toast"></div>
+
+  <script src="/js/client.js"></script>
+</body>
+</html>
