@@ -547,8 +547,12 @@ function drawHUD() {
   ctx.font         = '11px sans-serif';
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('Maintiens clic gauche · Espace = Boost', W / 2, H - 6);
-}
+  const hint = ('ontouchstart' in window)
+     ? 'Double tap = Boost'
+     : 'Maintiens clic gauche · Espace = Boost';
+   
+   ctx.fillText(hint, W / 2, H - 6);
+   }
 
 /* ════════════════════════════════════════════════
    Countdown
@@ -639,18 +643,40 @@ window.addEventListener('keyup', e => { if (e.code === 'Space') G.boost = false;
 /* ════════════════════════════════════════════════
    Input — Touch (mobile)
 ════════════════════════════════════════════════ */
+let lastTap = 0;
+
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
+
   const t = e.touches[0];
-  G.mouse.x = t.clientX; G.mouse.y = t.clientY;
-  G.boost   = true;
+  G.mouse.x = t.clientX;
+  G.mouse.y = t.clientY;
+
+  const now = Date.now();
+
+  // Double tap = toggle boost
+  if (now - lastTap < 300) {
+    G.boost = !G.boost;
+  }
+
+  lastTap = now;
+
 }, { passive: false });
+
+
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
+
   const t = e.touches[0];
-  G.mouse.x = t.clientX; G.mouse.y = t.clientY;
+  G.mouse.x = t.clientX;
+  G.mouse.y = t.clientY;
+
 }, { passive: false });
-canvas.addEventListener('touchend', () => { G.boost = false; });
+
+
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+}, { passive: false });
 
 /* ════════════════════════════════════════════════
    Auth tabs
