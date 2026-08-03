@@ -27,7 +27,8 @@ const rooms    = new Map(); // code → Room
 // ═══════════════════════════════════════════════════
 const MAP_RADIUS     = 900;
 const SNAKE_R        = 9;
-const SEG_DIST       = 9;
+const SEG_DIST       = 18;
+const FOLLOW_SPEED   = 0.35;
 const BASE_SPEED     = 3;
 const BOOST_SPEED    = 5.5;
 const TURN_RATE      = 0.13;
@@ -178,26 +179,43 @@ class Game {
       // Boost
       const maxFuel = s.segs.length * 8;
       let speed = BASE_SPEED;
+      
       if (s.boosting && s.fuel > 0) {
-        speed  = BOOST_SPEED;
+        speed = BOOST_SPEED;
         s.fuel = Math.max(0, s.fuel - 1);
-        // Shed mass when boosting
-        if (s.segs.length > INITIAL_SEGS + 5 && Math.random() < 0.4) {
-          const tail = s.segs[s.segs.length - 1];
-          this.food.push({ x: tail.x, y: tail.y, h: 50 });
-          if (s.growth > 0) s.growth--; else s.segs.pop();
-        }
       } else {
         s.fuel = Math.min(maxFuel, s.fuel + 0.5);
       }
 
-      // Move head
-      const nh = {
-        x: s.segs[0].x + Math.cos(s.angle) * speed,
-        y: s.segs[0].y + Math.sin(s.angle) * speed,
-      };
-      s.segs.unshift(nh);
-      if (s.growth > 0) s.growth--; else s.segs.pop();
+// Move head
+s.segs[0].x += Math.cos(s.angle) * speed;
+s.segs[0].y += Math.sin(s.angle) * speed;
+
+const nh = s.segs[0];
+
+// Body follows progressively
+for (let i = 1; i < s.segs.length; i++) {
+  const prev = s.segs[i - 1];
+  const seg = s.segs[i];
+
+  const dx = prev.x - seg.x;
+  const dy = prev.y - seg.y;
+
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  if (distance > SEG_DIST) {
+    const force = (distance - SEG_DIST) * FOLLOW_SPEED;
+
+    seg.x += (dx / distance) * force;
+    seg.y += (dy / distance) * force;
+  }
+}
+
+if (s.growth > 0) {
+  s.growth--;
+} else if (s.segs.length > INITIAL_SEGS) {
+  s.segs.pop();
+}
 
       // Wall
       if (nh.x * nh.x + nh.y * nh.y > MAP_RADIUS * MAP_RADIUS) {
